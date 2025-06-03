@@ -1,0 +1,235 @@
+<!-- ​6. Devaring Products (5 points) :
+
+​- Implement a function (`devareProduct`) to allow users to remove products from the list. - Update the page dynamically when a product is devared.
+ -->
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Product Page</title>
+   <style>
+     body {
+       font-family: Arial, sans-serif;
+       margin: 0;
+       padding: 0;
+       background-color: #f4f4f4;
+     }
+     header {
+       background-color: #333;
+       color: white;
+       text-align: center;
+       padding: 20px;
+     }
+     .container {
+       max-width: 1200px;
+       margin: 20px auto;
+       padding: 0 15px;
+     }
+     .form-container {
+       background-color: #fff;
+       padding: 20px;
+       border-radius: 8px;
+       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+       margin-bottom: 20px;
+     }
+     .form-container input, .form-container select {
+       width: 100%;
+       padding: 10px;
+       margin-bottom: 10px;
+       border-radius: 4px;
+       border: 1px solid #ccc;
+     }
+     .form-container button {
+       background-color: #28a745;
+       color: white;
+       padding: 10px 20px;
+       border: none;
+       border-radius: 4px;
+       cursor: pointer;
+     }
+     .form-container button:hover {
+       background-color: #218838;
+     }
+     .error-message {
+       color: red;
+       font-size: 14px;
+       margin-bottom: 10px;
+     }
+     .product-list {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 20px;
+       justify-content: space-between;
+     }
+     .product-item {
+       background-color: #fff;
+       padding: 20px;
+       border-radius: 8px;
+       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+       width: calc(33.33% - 20px);
+       text-align: center;
+       box-sizing: border-box;
+     }
+     .product-item img {
+       max-width: 100%;
+       border-radius: 4px;
+     }
+     .product-item h3 {
+       margin: 10px 0;
+       font-size: 18px;
+       font-weight: bold;
+     }
+     .product-item p {
+       margin: 5px 0;
+       font-size: 16px;
+     }
+     .edit-button, .devare-button {
+       background-color: #007bff;
+       color: white;
+       padding: 5px 10px;
+       border: none;
+       border-radius: 4px;
+       cursor: pointer;
+     }
+     .edit-button:hover, .devare-button:hover {
+       background-color: #0056b3;
+     }
+     .devare-button {
+       background-color: #dc3545;
+     }
+     @media (max-width: 768px) {
+       .product-item {
+         width: calc(50% - 20px);
+       }
+     }
+     @media (max-width: 480px) {
+       .product-item {
+         width: 100%;
+       }
+     }
+   </style>
+ </head>
+ <body>
+ 
+ <header>
+   <h1>Welcome to Our Product Page</h1>
+ </header>
+ 
+ <div class="container">
+ 
+   <div class="form-container">
+     <h2>Add or Edit Product</h2>
+     <form id="productForm" onsubmit="saveProduct(event)">
+       <div class="error-message" id="error-message"></div>
+       <input type="hidden" id="productId"> 
+       <input type="text" id="title" placeholder="Product Title" required>
+       <input type="number" id="price" placeholder="Price" required>
+       <input type="text" id="image" placeholder="Image URL" required>
+       <select id="category" required>
+         <option value="">Select Category</option>
+         <option value="Electronics">Electronics</option>
+         <option value="Clothing">Clothing</option>
+         <option value="Books">Books</option>
+         <option value="Home">Home</option>
+       </select>
+       <button type="submit">Save Product</button>
+     </form>
+   </div>
+ 
+   <div class="product-list" id="productList">
+   </div>
+ 
+ </div>
+ 
+ <script>
+   function loadProducts() {
+     var products = JSON.parse(localStorage.getItem('products')) || [];
+     products.forEach(product => {
+       displayProduct(product);
+     });
+   }
+ 
+   function displayProduct(product) {
+     var productItem = document.createElement('div');
+     productItem.classList.add('product-item');
+     productItem.setAttribute('data-id', product.id); 
+     
+     productItem.innerHTML = `
+       <img src="${product.image}" alt="${product.title}">
+       <h3>${product.title}</h3>
+       <p>Price: $${product.price}</p>
+       <p>Category: ${product.category}</p>
+       <button class="edit-button" onclick="editProduct('${product.id}')">Edit</button>
+       <button class="devare-button" onclick="devareProduct('${product.id}')">Devare</button>
+     `;
+ 
+     document.getElementById('productList').appendChild(productItem);
+   }
+ 
+   function saveProduct(event) {
+     event.preventDefault();
+ 
+     var title = document.getElementById('title').value.trim();
+     var price = document.getElementById('price').value.trim();
+     var image = document.getElementById('image').value.trim();
+     var category = document.getElementById('category').value;
+     var productId = document.getElementById('productId').value;
+ 
+     if (!title || !price) {
+       document.getElementById('error-message').textContent = "Please provide both a product name and price.";
+       return;
+     } else {
+       document.getElementById('error-message').textContent = '';
+     }
+ 
+     var newProduct = {
+       id: productId || new Date().getTime().toString(), 
+       title,
+       price,
+       image,
+       category
+     };
+ 
+     var products = JSON.parse(localStorage.getItem('products')) || [];
+     
+     if (productId) {
+       products = products.map(product => product.id === productId ? newProduct : product);
+     } else {
+       products.push(newProduct);
+     }
+ 
+     localStorage.setItem('products', JSON.stringify(products));
+ 
+     document.getElementById('productForm').reset();
+     document.getElementById('productId').value = ''; 
+     document.getElementById('productList').innerHTML = ''; 
+   }
+ 
+   function editProduct(productId) {
+     var products = JSON.parse(localStorage.getItem('products')) || [];
+     var product = products.find(p => p.id === productId);
+ 
+     document.getElementById('title').value = product.title;
+     document.getElementById('price').value = product.price;
+     document.getElementById('image').value = product.image;
+     document.getElementById('category').value = product.category;
+     document.getElementById('productId').value = product.id; 
+   }  
+   function devareProduct(productId) {
+     var products = JSON.parse(localStorage.getItem('products')) || [];
+     
+     products = products.filter(product => product.id !== productId);
+     
+     localStorage.setItem('products', JSON.stringify(products));
+ 
+     var productItem = document.querySelector(`.product-item[data-id="${productId}"]`);
+     if (productItem) {
+       productItem.remove(); 
+     }
+   }
+ 
+   window.onload = loadProducts;
+ </script>
+ 
+ 
